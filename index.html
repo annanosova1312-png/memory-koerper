@@ -107,15 +107,17 @@
       pointer-events: none;
     }
 
-    .card {
-      position: relative;
-      width: 100%;
-      max-width: 150px;
-      aspect-ratio: 3 / 4;
-      perspective: 1100px;
-      cursor: pointer;
-      z-index: 1;
-    }
+   .card {
+  position: relative;
+  width: 100%;
+  max-width: 150px;
+  aspect-ratio: 3 / 4;
+  perspective: 1100px;
+  cursor: pointer;
+  z-index: 1;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
     .card-inner {
       position: relative;
