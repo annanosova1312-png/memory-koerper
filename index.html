@@ -15,6 +15,7 @@
 
     * {
       box-sizing: border-box;
+      user-select: none;
     }
 
     body {
@@ -319,16 +320,6 @@
       }
     }
 
-    @keyframes float {
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-6px);
-      }
-    }
-
     @keyframes wrapper-pop {
       from {
         transform: translateY(30px) scale(0.96);
@@ -459,40 +450,15 @@
 
   <script>
     const pairs = [
-      {
-        id: "auge",
-        images: ["ein_auge.png", "zwei_augen.png"],
-        audio: "auge.wav",
-      },
-      {
-        id: "finger",
-        images: ["ein_finger.png", "zwei_finger.png"],
-        audio: "finger.wav",
-      },
-      {
-        id: "ohr",
-        images: ["ein_ohr.png", "zwei_ohren.png"],
-        audio: "ohr.wav",
-      },
-      {
-        id: "hand",
-        images: ["eine_hand.png", "zwei_haende.png"],
-        audio: "hand.wav",
-      },
-      {
-        id: "bein",
-        images: ["ein_bein.png", "zwei_beine.png"],
-        audio: "bein.wav",
-      },
-      {
-        id: "arm",
-        images: ["ein_arm.png", "zwei_arme.png"],
-        audio: "arm.wav",
-      },
+      { id: "auge", images: ["ein_auge.png", "zwei_augen.png"], audio: "auge.wav" },
+      { id: "finger", images: ["ein_finger.png", "zwei_finger.png"], audio: "finger.wav" },
+      { id: "ohr", images: ["ein_ohr.png", "zwei_ohren.png"], audio: "ohr.wav" },
+      { id: "hand", images: ["eine_hand.png", "zwei_haende.png"], audio: "hand.wav" },
+      { id: "bein", images: ["ein_bein.png", "zwei_beine.png"], audio: "bein.wav" },
+      { id: "arm", images: ["ein_arm.png", "zwei_arme.png"], audio: "arm.wav" },
     ];
 
     const sounds = {};
-
     let firstCard = null;
     let secondCard = null;
     let lockBoard = false;
@@ -519,17 +485,14 @@
       const card = document.createElement("div");
       card.className = "card";
       card.dataset.id = cardData.id;
-      card.dataset.audio = cardData.audioId;
 
       const inner = document.createElement("div");
       inner.className = "card-inner";
 
-      // Закрытая сторона — простой вопросительный знак
       const front = document.createElement("div");
       front.className = "card-face card-front";
       front.textContent = "?";
 
-      // Открытая сторона — картинка
       const back = document.createElement("div");
       back.className = "card-face card-back";
       const img = document.createElement("img");
@@ -541,7 +504,13 @@
       inner.appendChild(back);
       card.appendChild(inner);
 
+      // 📱 Основное исправление для мобильных
+      card.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        onCardClick(e);
+      });
       card.addEventListener("click", onCardClick);
+
       return card;
     }
 
@@ -552,16 +521,11 @@
       const cardsData = [];
       pairs.forEach((pair) => {
         pair.images.forEach((img) => {
-          cardsData.push({
-            id: pair.id,
-            image: img,
-            audioId: pair.id,
-          });
+          cardsData.push({ id: pair.id, image: img });
         });
       });
 
       shuffle(cardsData);
-
       cardsData.forEach((cardData) => {
         const cardEl = createCardElement(cardData);
         board.appendChild(cardEl);
@@ -588,21 +552,18 @@
 
     function checkForMatch() {
       if (!firstCard || !secondCard) return;
-
       const isMatch = firstCard.dataset.id === secondCard.dataset.id;
 
       if (isMatch) {
         firstCard.classList.add("matched");
         secondCard.classList.add("matched");
-
         matchedPairs++;
 
         const img1 = firstCard.querySelector(".card-back img").src;
         const img2 = secondCard.querySelector(".card-back img").src;
-        const pairId = firstCard.dataset.id;
         const isLastPair = matchedPairs === totalPairs;
 
-        showMatchAndPlayAudio(img1, img2, pairId, isLastPair);
+        showMatchAndPlayAudio(img1, img2, firstCard.dataset.id, isLastPair);
       } else {
         setTimeout(() => {
           firstCard.classList.remove("flipped");
@@ -620,48 +581,37 @@
 
       imgEl1.src = img1;
       imgEl2.src = img2;
-
       overlay.classList.remove("hidden");
       overlay.setAttribute("aria-hidden", "false");
       board.classList.add("blurred");
 
       const audio = sounds[pairId];
-
       const finishAfterAudio = () => {
         overlay.classList.add("hidden");
         overlay.setAttribute("aria-hidden", "true");
         board.classList.remove("blurred");
         resetTurn();
-        if (isLastPair) {
-          showEndScreen();
-        }
+        if (isLastPair) showEndScreen();
       };
 
-      if (!audio) {
+      if (audio) {
+        audio.currentTime = 0;
+        audio.onended = finishAfterAudio;
+        audio.play().catch(() => setTimeout(finishAfterAudio, 600));
+      } else {
         finishAfterAudio();
-        return;
       }
-
-      audio.currentTime = 0;
-      audio.onended = () => {
-        finishAfterAudio();
-      };
-
-      audio.play().catch(() => {
-        setTimeout(finishAfterAudio, 600);
-      });
     }
 
     function resetTurn() {
-      [firstCard, secondCard] = [null, null];
+      firstCard = null;
+      secondCard = null;
       lockBoard = false;
     }
 
     function createFireworks() {
       const container = document.getElementById("fireworks");
-      if (!container) return;
       container.innerHTML = "";
-
       const colors = [
         "rgba(255,107,181,0.95)",
         "rgba(255,230,109,0.95)",
@@ -669,19 +619,13 @@
         "rgba(108,92,231,0.95)",
         "rgba(255,159,67,0.95)",
       ];
-
       for (let i = 0; i < 18; i++) {
         const fw = document.createElement("div");
         fw.className = "firework";
-        const left = Math.random() * 100;
-        const top = Math.random() * 70;
-        fw.style.left = left + "%";
-        fw.style.top = top + "%";
-
+        fw.style.left = Math.random() * 100 + "%";
+        fw.style.top = Math.random() * 70 + "%";
         const color = colors[Math.floor(Math.random() * colors.length)];
-        fw.style.boxShadow =
-          `0 0 0 4px ${color}, 0 0 0 8px rgba(255,255,255,0.7), 0 0 20px ${color}`;
-
+        fw.style.boxShadow = `0 0 0 4px ${color}, 0 0 0 8px rgba(255,255,255,0.7), 0 0 20px ${color}`;
         fw.style.animationDelay = (Math.random() * 1.2).toFixed(2) + "s";
         container.appendChild(fw);
       }
@@ -697,22 +641,16 @@
     function restartGame() {
       matchedPairs = 0;
       resetTurn();
-      const endOverlay = document.getElementById("end-overlay");
-      endOverlay.classList.add("hidden");
-      endOverlay.setAttribute("aria-hidden", "true");
-
-      const board = document.getElementById("game-board");
-      board.classList.remove("blurred");
-
+      document.getElementById("end-overlay").classList.add("hidden");
+      document.getElementById("end-overlay").setAttribute("aria-hidden", "true");
+      document.getElementById("game-board").classList.remove("blurred");
       initGameBoard();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       initAudio();
       initGameBoard();
-
-      const playAgainBtn = document.getElementById("play-again-btn");
-      playAgainBtn.addEventListener("click", restartGame);
+      document.getElementById("play-again-btn").addEventListener("click", restartGame);
     });
   </script>
 </body>
