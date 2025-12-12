@@ -107,17 +107,17 @@
       pointer-events: none;
     }
 
-   .card {
-  position: relative;
-  width: 100%;
-  max-width: 150px;
-  aspect-ratio: 3 / 4;
-  perspective: 1100px;
-  cursor: pointer;
-  z-index: 1;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
+    .card {
+      position: relative;
+      width: 100%;
+      max-width: 150px;
+      aspect-ratio: 3 / 4;
+      perspective: 1100px;
+      cursor: pointer;
+      z-index: 1;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     .card-inner {
       position: relative;
@@ -147,32 +147,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: clamp(3rem, 8vw, 4rem);
+      font-weight: bold;
     }
 
     .card-front {
-      background: radial-gradient(circle at 20% 20%, #ffffff, #ffe0f7, #ffc4d8);
-      font-size: clamp(2.2rem, 4.5vw, 2.7rem);
-      color: #ffffff;
-      text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
-      overflow: hidden;
-    }
-
-    .card-front-inner {
-      width: 80%;
-      height: 80%;
-      border-radius: 1.4rem;
-      border: 4px dashed rgba(255, 255, 255, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--pink), var(--orange));
-      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.7);
-      animation: float 3s ease-in-out infinite;
-    }
-
-    .card-front-inner span {
-      display: block;
-      transform: rotate(-8deg);
+      background: #f0f0f0;
+      color: #888;
     }
 
     .card-back {
@@ -543,15 +524,12 @@
       const inner = document.createElement("div");
       inner.className = "card-inner";
 
+      // Закрытая сторона — простой вопросительный знак
       const front = document.createElement("div");
       front.className = "card-face card-front";
-      const frontInner = document.createElement("div");
-      frontInner.className = "card-front-inner";
-      const star = document.createElement("span");
-      star.textContent = "★";
-      frontInner.appendChild(star);
-      front.appendChild(frontInner);
+      front.textContent = "?";
 
+      // Открытая сторона — картинка
       const back = document.createElement("div");
       back.className = "card-face card-back";
       const img = document.createElement("img");
@@ -669,7 +647,6 @@
         finishAfterAudio();
       };
 
-      // If the sound cannot be played, fallback to finishing quickly
       audio.play().catch(() => {
         setTimeout(finishAfterAudio, 600);
       });
