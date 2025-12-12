@@ -152,10 +152,16 @@
       font-weight: bold;
     }
 
-    .card-front {
-      background: #f0f0f0;
-      color: #888;
-    }
+.card-front {
+  background: linear-gradient(135deg, #ff6bb5, #ffe66d);
+  color: #333;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
+  font-weight: bold;
+  font-size: clamp(3rem, 8vw, 4rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
     .card-back {
       transform: rotateY(180deg);
